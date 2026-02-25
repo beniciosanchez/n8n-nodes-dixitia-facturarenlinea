@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.js.map
+.env
+*.pfx
+*.cer
+*.key
+.DS_Store
+*.log
