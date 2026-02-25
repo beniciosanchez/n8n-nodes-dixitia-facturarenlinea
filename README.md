@@ -9,7 +9,7 @@ Sigue la [guía de instalación de community nodes](https://docs.n8n.io/integrat
 1. Abre tu instancia de n8n.
 2. Ve a **Configuración › Community Nodes**.
 3. Selecciona **Instalar**.
-4. Ingresa `n8n-nodes-facturarenlinea` en el campo de nombre de paquete npm.
+4. Ingresa `n8n-nodes-dixitia-facturarenlinea` en el campo de nombre de paquete npm.
 5. Acepta los riesgos y selecciona **Instalar**.
 
 ## Credenciales
