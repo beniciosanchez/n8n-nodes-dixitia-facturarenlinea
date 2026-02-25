@@ -1,0 +1,56 @@
+{
+  "name": "n8n-nodes-dixitia-facturarenlinea",
+  "version": "1.0.0",
+  "description": "n8n community node for Facturar En Línea (FEL) CFDI timbrado API",
+  "keywords": [
+    "n8n-community-node-package",
+    "facturar en linea",
+    "fel",
+    "cfdi",
+    "timbrado",
+    "facturacion electronica",
+    "mexico",
+    "sat"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/beniciosanchez/n8n-nodes-dixitia-facturarenlinea",
+  "author": {
+    "name": "Dixitia"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beniciosanchez/n8n-nodes-dixitia-facturarenlinea.git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "format": "prettier nodes credentials --write",
+    "lint": "eslint nodes credentials package.json",
+    "lint:fix": "eslint nodes credentials package.json --fix",
+    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/FacturarEnLineaApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/FacturarEnLinea/FacturarEnLinea.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.130",
+    "@types/xml2js": "^0.4.14",
+    "eslint-plugin-n8n-nodes-base": "^1.11.0",
+    "n8n-workflow": "~2.5.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "axios": "^1.13.5",
+    "xml2js": "^0.6.2"
+  }
+}
