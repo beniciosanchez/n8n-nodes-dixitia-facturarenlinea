@@ -831,9 +831,9 @@ export class FacturarEnLinea implements INodeType {
               const fechaFinal   = this.getNodeParameter('fechaFinalCR',   i) as string;
               const filaInicial  = this.getNodeParameter('filaInicialCR',  i) as number;
               result = await soapRequestCR(environment, method, crCreds, {
-                FechaInicial: formatFelDate(fechaInicial),
-                FechaFinal:   formatFelDate(fechaFinal),
-                FilaInicial:  String(filaInicial),
+                fechaInicial: formatFelDate(fechaInicial),
+                fechaFinal:   formatFelDate(fechaFinal),
+                filaInicial:  String(filaInicial),
               });
             }
           }
