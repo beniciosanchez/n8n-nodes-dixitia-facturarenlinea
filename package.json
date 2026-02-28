@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-dixitia-facturarenlinea",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "n8n community node para el servicio FEL ConexionRemota de Dixitia — facturación electrónica CFDI México",
   "keywords": [
     "n8n-community-node-package",

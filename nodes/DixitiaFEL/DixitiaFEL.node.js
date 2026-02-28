@@ -469,7 +469,7 @@ class DixitiaFEL {
 					soapAction = ACTION_BASE + 'GenerarCFDI40';
 					body = envelope(`<tns:GenerarCFDI40>
   ${creds}
-  ${objToXml('cfdi', obj)}
+  ${objToXml('comprobante', obj)}
 </tns:GenerarCFDI40>`);
 					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'GenerarCFDI40Result') || xml);
 				}
