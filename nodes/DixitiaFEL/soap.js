@@ -2,12 +2,13 @@
 
 const SOAP_NS = 'http://schemas.xmlsoap.org/soap/envelope/';
 const TNS = 'http://tempuri.org/';
+const NS_CONTRACT = 'http://schemas.datacontract.org/2004/07/TES.V33.CFDI.Negocios';
 
 function buildCredenciales(cuenta, usuario, password) {
 	return `<tns:credenciales>
-    <tns:Cuenta>${escXml(cuenta)}</tns:Cuenta>
-    <tns:Usuario>${escXml(usuario)}</tns:Usuario>
-    <tns:Password>${escXml(password)}</tns:Password>
+    <cred:Cuenta>${escXml(cuenta)}</cred:Cuenta>
+    <cred:Password>${escXml(password)}</cred:Password>
+    <cred:Usuario>${escXml(usuario)}</cred:Usuario>
   </tns:credenciales>`;
 }
 
@@ -15,7 +16,9 @@ function envelope(body) {
 	return `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope
   xmlns:soap="${SOAP_NS}"
-  xmlns:tns="${TNS}">
+  xmlns:tns="${TNS}"
+  xmlns:cred="${NS_CONTRACT}">
+  <soap:Header/>
   <soap:Body>
     ${body}
   </soap:Body>
@@ -24,7 +27,10 @@ function envelope(body) {
 
 function escXml(val) {
 	if (val === null || val === undefined) return '';
-	return String(val)
+	const str = String(val);
+	// If value looks like XML, wrap in CDATA
+	if (str.trim().startsWith('<')) return `<![CDATA[${str}]]>`;
+	return str
 		.replace(/&/g, '&amp;')
 		.replace(/</g, '&lt;')
 		.replace(/>/g, '&gt;')
@@ -45,10 +51,8 @@ function objToXml(tagName, obj, ns = 'tns') {
 	if (Array.isArray(obj)) {
 		return obj.map((item) => objToXml(tagName, item, ns)).join('');
 	}
-
 	const attrs = [];
 	const children = [];
-
 	for (const [key, val] of Object.entries(obj)) {
 		if (key.startsWith('@')) {
 			attrs.push(`${key.slice(1)}="${escXml(val)}"`);
@@ -60,7 +64,6 @@ function objToXml(tagName, obj, ns = 'tns') {
 			children.push(`<${ns}:${key}>${escXml(val)}</${ns}:${key}>`);
 		}
 	}
-
 	const attrStr = attrs.length ? ' ' + attrs.join(' ') : '';
 	if (children.length === 0) return `<${ns}:${tagName}${attrStr}/>`;
 	return `<${ns}:${tagName}${attrStr}>${children.join('')}</${ns}:${tagName}>`;
@@ -84,59 +87,83 @@ function getAllTags(xml, tag) {
 	return results;
 }
 
-/** Parse a RespuestaOperacionCR block */
+/**
+ * Parse RespuestaOperacionCR
+ * Fields per official spec: CBB, CodigoConfirmacion, ErrorDetallado, ErrorGeneral,
+ * FechaGenerada, FolioGenerado, OperacionExitosa, PDF, XML, Addenda
+ */
 function parseRespuestaOperacion(xml) {
-	const codigoError = getTag(xml, 'CodigoError');
+	const errorGeneral = getTag(xml, 'ErrorGeneral');
+	const operacionExitosa = getTag(xml, 'OperacionExitosa');
+	const ok = operacionExitosa === 'true';
 	return {
 		xml: getTag(xml, 'XML'),
 		pdf: getTag(xml, 'PDF'),
 		cbb: getTag(xml, 'CBB'),
-		uuid: getTag(xml, 'UUID'),
-		folio: getTag(xml, 'Folio'),
-		serie: getTag(xml, 'Serie'),
-		fechaTimbrado: getTag(xml, 'FechaTimbrado'),
-		noCertificadoSat: getTag(xml, 'NoCertificadoSat'),
-		noCertificadoEmisor: getTag(xml, 'NoCertificadoEmisor'),
-		selloCFD: getTag(xml, 'SelloCFD'),
-		selloSAT: getTag(xml, 'SelloSAT'),
-		cadenaOriginal: getTag(xml, 'CadenaOriginal'),
-		codigoError,
-		descripcionError: getTag(xml, 'DescripcionError'),
-		mensajeError: getTag(xml, 'MensajeError'),
-		ok: !codigoError || codigoError === '',
+		folioGenerado: getTag(xml, 'FolioGenerado'),
+		fechaGenerada: getTag(xml, 'FechaGenerada'),
+		codigoConfirmacion: getTag(xml, 'CodigoConfirmacion'),
+		addenda: getTag(xml, 'Addenda'),
+		errorGeneral: errorGeneral || null,
+		errorDetallado: getTag(xml, 'ErrorDetallado'),
+		ok,
 	};
 }
 
-/** Parse a RespuestaCancelacionCR block */
+/**
+ * Parse RespuestaCancelacionCR
+ * Fields per official spec: Acuse, ErrorGeneral, OperacionExitosa
+ */
 function parseRespuestaCancelacion(xml) {
-	const codigoError = getTag(xml, 'CodigoError');
+	const errorGeneral = getTag(xml, 'ErrorGeneral');
+	const operacionExitosa = getTag(xml, 'OperacionExitosa');
+	const ok = operacionExitosa === 'true';
 	return {
 		acuse: getTag(xml, 'Acuse'),
-		codigoError,
-		descripcionError: getTag(xml, 'DescripcionError'),
-		mensajeError: getTag(xml, 'MensajeError'),
-		ok: !codigoError || codigoError === '',
+		errorGeneral: errorGeneral || null,
+		errorDetallado: getTag(xml, 'ErrorDetallado'),
+		ok,
 	};
 }
 
-/** Parse a RespuestaReporteCR block */
+/**
+ * Parse list responses (ObtenerComprobantes40, ObtenerTickets, ObtenerSolicitudes)
+ * Real tag from service: <a:ListaComprobantes><a:RegistroCFDICR>...
+ * Fields per real response: UUID, Estado, FechaTimbrado, RFCReceptor
+ */
 function parseRespuestaReporte(xml) {
-	const items = getAllTags(xml, 'ReporteCFDI').map((item) => ({
+	const errorGeneral = getTag(xml, 'ErrorGeneral');
+	const operacionExitosa = getTag(xml, 'OperacionExitosa');
+	const ok = operacionExitosa === 'true';
+	const listaXml = getTag(xml, 'ListaComprobantes') || '';
+	const items = getAllTags(listaXml, 'RegistroCFDICR').map((item) => ({
 		uuid: getTag(item, 'UUID'),
-		serie: getTag(item, 'Serie'),
-		folio: getTag(item, 'Folio'),
+		estado: getTag(item, 'Estado'),
 		fechaTimbrado: getTag(item, 'FechaTimbrado'),
-		receptor: getTag(item, 'Receptor'),
-		total: getTag(item, 'Total'),
-		tipoComprobante: getTag(item, 'TipoComprobante'),
-		status: getTag(item, 'Status'),
+		rfcReceptor: getTag(item, 'RFCReceptor'),
 	}));
-	const codigoError = getTag(xml, 'CodigoError');
 	return {
 		items,
-		codigoError,
-		descripcionError: getTag(xml, 'DescripcionError'),
-		ok: !codigoError || codigoError === '',
+		totalComprobantes: getTag(xml, 'TotalComprobantesPeriodo'),
+		errorGeneral: errorGeneral || null,
+		ok,
+	};
+}
+
+/**
+ * Parse ObtenerNumerosCreditos response
+ * Fields per official spec: CreditosRestantes, CreditosUsados, ErrorGeneral, OperacionExitosa
+ */
+function parseNumerosCreditos(xml) {
+	const errorGeneral = getTag(xml, 'ErrorGeneral');
+	const operacionExitosa = getTag(xml, 'OperacionExitosa');
+	const ok = operacionExitosa === 'true';
+	return {
+		creditosRestantes: getTag(xml, 'CreditosRestantes'),
+		creditosUsados: getTag(xml, 'CreditosUsados'),
+		errorGeneral: errorGeneral || null,
+		errorDetallado: getTag(xml, 'ErrorDetallado'),
+		ok,
 	};
 }
 
@@ -150,4 +177,5 @@ module.exports = {
 	parseRespuestaOperacion,
 	parseRespuestaCancelacion,
 	parseRespuestaReporte,
+	parseNumerosCreditos,
 };

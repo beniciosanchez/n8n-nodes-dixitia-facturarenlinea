@@ -10,6 +10,7 @@ const {
 	parseRespuestaOperacion,
 	parseRespuestaCancelacion,
 	parseRespuestaReporte,
+	parseNumerosCreditos,
 } = require('./soap');
 
 const ENDPOINT_PROD = 'https://fel.mx/CR33/ConexionRemota.svc';
@@ -29,12 +30,7 @@ class DixitiaFEL {
 			defaults: { name: 'Dixitia-FEL' },
 			inputs: ['main'],
 			outputs: ['main'],
-			credentials: [
-				{
-					name: 'dixitiaFELApi',
-					required: true,
-				},
-			],
+			credentials: [{ name: 'dixitiaFELApi', required: true }],
 			properties: [
 
 				// ── Environment ──────────────────────────────────────────
@@ -47,7 +43,6 @@ class DixitiaFEL {
 						{ name: 'Test', value: 'test' },
 					],
 					default: 'prod',
-					description: 'Which endpoint to call',
 				},
 
 				// ── Resource ─────────────────────────────────────────────
@@ -60,13 +55,14 @@ class DixitiaFEL {
 						{ name: 'CFDI', value: 'cfdi' },
 						{ name: 'Ticket', value: 'ticket' },
 						{ name: 'Crédito', value: 'credit' },
+						{ name: 'Cancelación (Receptor)', value: 'cancelacionReceptor' },
 						{ name: 'Utilidad', value: 'utility' },
 					],
 					default: 'cfdi',
 				},
 
 				// ════════════════════════════════════════════════════════
-				// CFDI — operations
+				// CFDI operations
 				// ════════════════════════════════════════════════════════
 				{
 					displayName: 'Operation',
@@ -75,27 +71,21 @@ class DixitiaFEL {
 					noDataExpression: true,
 					displayOptions: { show: { resource: ['cfdi'] } },
 					options: [
-						{ name: 'Generar CFDI 4.0', value: 'generarCFDI40', description: 'Timbrar un nuevo CFDI 4.0' },
-						{ name: 'Cancelar CFDI v4', value: 'cancelarCFDIsV4', description: 'Cancelar uno o más CFDIs (método v4)' },
-						{ name: 'Obtener PDF 4.0', value: 'obtenerPDF40', description: 'Obtener PDF en base64 por UUID' },
-						{ name: 'Obtener XML por UUID 4.0', value: 'obtenerXMLPorUUID40', description: 'Obtener XML por UUID' },
-						{ name: 'Obtener PDF y XML 4.0', value: 'obtenerPDFyXML40', description: 'Obtener PDF y XML en una sola llamada' },
-						{ name: 'Enviar CFDI 4.0', value: 'enviarCFDI40', description: 'Enviar CFDI por correo' },
-						{ name: 'Obtener Comprobantes 4.0', value: 'obtenerComprobantes40', description: 'Listar CFDIs por rango de fechas' },
-						{ name: 'Consultar Estatus Cancelación', value: 'consultarEstatusCancelacion', description: 'Consultar estatus de cancelación' },
-						{ name: 'Obtener Relacionados 4.0', value: 'obtenerRelacionados40', description: 'Obtener CFDIs relacionados' },
-						{ name: 'Generar CFDI 3.3 (legacy)', value: 'generarCFDI', description: 'Timbrar CFDI 3.3' },
-						{ name: 'Cancelar CFDI 3.3 (legacy)', value: 'cancelarCFDIs', description: 'Cancelar CFDI (método 3.3)' },
-						{ name: 'Obtener PDF 3.3 (legacy)', value: 'obtenerPDF', description: 'Obtener PDF CFDI 3.3' },
-						{ name: 'Obtener XML por UUID 3.3 (legacy)', value: 'obtenerXMLPorUUID', description: 'Obtener XML CFDI 3.3' },
-						{ name: 'Enviar CFDI 3.3 (legacy)', value: 'enviarCFDI', description: 'Enviar CFDI 3.3 por correo' },
-						{ name: 'Obtener Comprobantes 3.3 (legacy)', value: 'obtenerComprobantes', description: 'Listar CFDIs 3.3 por rango de fechas' },
+						{ name: 'Generar CFDI 4.0', value: 'generarCFDI40' },
+						{ name: 'Cancelar CFDIs v4', value: 'cancelarCFDIsV4' },
+						{ name: 'Obtener PDF 4.0', value: 'obtenerPDF40' },
+						{ name: 'Obtener XML por UUID 4.0', value: 'obtenerXMLPorUUID40' },
+						{ name: 'Obtener XML por Referencia 4.0', value: 'obtenerXMLPorReferencia40' },
+						{ name: 'Obtener Acuse Cancelación 4.0', value: 'obtenerAcuseCancelacion40' },
+						{ name: 'Obtener Acuse Envío 4.0', value: 'obtenerAcuseEnvio40' },
+						{ name: 'Enviar CFDI 4.0', value: 'enviarCFDI40' },
+						{ name: 'Obtener Comprobantes 4.0', value: 'obtenerComprobantes40' },
 					],
 					default: 'generarCFDI40',
 				},
 
 				// ════════════════════════════════════════════════════════
-				// Ticket — operations
+				// Ticket operations
 				// ════════════════════════════════════════════════════════
 				{
 					displayName: 'Operation',
@@ -104,15 +94,16 @@ class DixitiaFEL {
 					noDataExpression: true,
 					displayOptions: { show: { resource: ['ticket'] } },
 					options: [
-						{ name: 'Generar Ticket', value: 'generarTicket', description: 'Crear un ticket' },
-						{ name: 'Cancelar Ticket', value: 'cancelarTicket', description: 'Cancelar un ticket' },
-						{ name: 'Obtener Tickets', value: 'obtenerTickets', description: 'Listar tickets por rango de fechas' },
+						{ name: 'Generar Ticket 4.0', value: 'generarTicket40' },
+						{ name: 'Obtener Tickets', value: 'obtenerTickets' },
+						{ name: 'Obtener Tickets por Estatus', value: 'obtenerTicketsPorEstatus' },
+						{ name: 'Cancelar Ticket', value: 'cancelarTicket' },
 					],
-					default: 'generarTicket',
+					default: 'generarTicket40',
 				},
 
 				// ════════════════════════════════════════════════════════
-				// Crédito — operations
+				// Crédito operations
 				// ════════════════════════════════════════════════════════
 				{
 					displayName: 'Operation',
@@ -121,15 +112,32 @@ class DixitiaFEL {
 					noDataExpression: true,
 					displayOptions: { show: { resource: ['credit'] } },
 					options: [
-						{ name: 'Obtener Números de Crédito', value: 'obtenerNumerosCreditos', description: 'Consultar saldo de créditos' },
-						{ name: 'Activar Paquete', value: 'activarPaquete', description: 'Activar un paquete de créditos' },
-						{ name: 'Traspasar Paquete', value: 'traspasarPaquete', description: 'Transferir créditos a otra cuenta' },
+						{ name: 'Obtener Números de Créditos', value: 'obtenerNumerosCreditos' },
+						{ name: 'Activar Paquete', value: 'activarPaquete' },
+						{ name: 'Traspasar Paquete', value: 'traspasarPaquete' },
 					],
 					default: 'obtenerNumerosCreditos',
 				},
 
 				// ════════════════════════════════════════════════════════
-				// Utilidad — operations
+				// Cancelación Receptor operations
+				// ════════════════════════════════════════════════════════
+				{
+					displayName: 'Operation',
+					name: 'operation',
+					type: 'options',
+					noDataExpression: true,
+					displayOptions: { show: { resource: ['cancelacionReceptor'] } },
+					options: [
+						{ name: 'Obtener Solicitudes Cancelación', value: 'obtenerSolicitudesCancelacion' },
+						{ name: 'Obtener Solicitudes Pendientes', value: 'obtenerSolicitudesPendientes' },
+						{ name: 'Procesar Solicitudes Cancelación', value: 'procesarSolicitudesCancelacion' },
+					],
+					default: 'obtenerSolicitudesPendientes',
+				},
+
+				// ════════════════════════════════════════════════════════
+				// Utility operations
 				// ════════════════════════════════════════════════════════
 				{
 					displayName: 'Operation',
@@ -138,36 +146,27 @@ class DixitiaFEL {
 					noDataExpression: true,
 					displayOptions: { show: { resource: ['utility'] } },
 					options: [
-						{ name: 'Validar RFC', value: 'validarRFC', description: 'Validar un RFC mexicano' },
+						{ name: 'Validar RFC', value: 'validarRFC' },
 					],
 					default: 'validarRFC',
 				},
 
 				// ════════════════════════════════════════════════════════
-				// Fields: CFDI
+				// FIELDS
 				// ════════════════════════════════════════════════════════
 
-				// Comprobante 4.0
+				// GenerarCFDI40 — cfdi object
 				{
-					displayName: 'Comprobante JSON',
-					name: 'comprobante40',
+					displayName: 'CFDI JSON',
+					name: 'cfdiJson',
 					type: 'json',
 					displayOptions: { show: { resource: ['cfdi'], operation: ['generarCFDI40'] } },
 					default: '{}',
-					description: 'Objeto Comprobante40R completo como JSON. Ver README para la estructura.',
+					required: true,
+					description: 'Objeto Comprobante40R completo como JSON. Ver documentación oficial para la estructura.',
 				},
 
-				// Comprobante 3.3
-				{
-					displayName: 'Comprobante JSON',
-					name: 'comprobante33',
-					type: 'json',
-					displayOptions: { show: { resource: ['cfdi'], operation: ['generarCFDI'] } },
-					default: '{}',
-					description: 'Objeto Comprobante33R completo como JSON.',
-				},
-
-				// UUID (single — used by multiple operations)
+				// UUID (lowercase per spec) — shared
 				{
 					displayName: 'UUID',
 					name: 'uuid',
@@ -175,148 +174,188 @@ class DixitiaFEL {
 					displayOptions: {
 						show: {
 							resource: ['cfdi'],
-							operation: [
-								'obtenerPDF40',
-								'obtenerXMLPorUUID40',
-								'obtenerPDFyXML40',
-								'consultarEstatusCancelacion',
-								'obtenerRelacionados40',
-								'obtenerPDF',
-								'obtenerXMLPorUUID',
-							],
+							operation: ['obtenerPDF40', 'obtenerXMLPorUUID40', 'obtenerAcuseCancelacion40', 'obtenerAcuseEnvio40', 'enviarCFDI40'],
 						},
 					},
 					default: '',
 					required: true,
-					description: 'UUID del CFDI (folio fiscal)',
+					description: 'UUID / Folio Fiscal del CFDI (formato: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)',
 				},
 
-				// Cancelar v4
+				// nombrePlantilla — optional for ObtenerPDF40
+				{
+					displayName: 'Nombre Plantilla (opcional)',
+					name: 'nombrePlantilla',
+					type: 'string',
+					displayOptions: { show: { resource: ['cfdi'], operation: ['obtenerPDF40'] } },
+					default: '',
+					description: 'Nombre de la plantilla configurada en el Sistema en línea',
+				},
+
+				// referencia — ObtenerXMLPorReferencia40
+				{
+					displayName: 'Referencia',
+					name: 'referencia',
+					type: 'string',
+					displayOptions: { show: { resource: ['cfdi'], operation: ['obtenerXMLPorReferencia40'] } },
+					default: '',
+					required: true,
+					description: 'Referencia única usada para emitir el CFDI (máx. 32 caracteres)',
+				},
+
+				// EnviarCFDI40 extra fields
+				{
+					displayName: 'Email(s)',
+					name: 'email',
+					type: 'string',
+					displayOptions: { show: { resource: ['cfdi'], operation: ['enviarCFDI40'] } },
+					default: '',
+					required: true,
+					description: 'Hasta 3 correos separados por coma',
+				},
+				{
+					displayName: 'Título del correo',
+					name: 'titulo',
+					type: 'string',
+					displayOptions: { show: { resource: ['cfdi'], operation: ['enviarCFDI40'] } },
+					default: '',
+					description: 'Título del correo (puede ir vacío)',
+				},
+				{
+					displayName: 'Mensaje del correo',
+					name: 'mensaje',
+					type: 'string',
+					typeOptions: { rows: 3 },
+					displayOptions: { show: { resource: ['cfdi'], operation: ['enviarCFDI40'] } },
+					default: '',
+					description: 'Cuerpo del correo (puede ir vacío)',
+				},
+				{
+					displayName: 'Nombre Plantilla (opcional)',
+					name: 'nombrePlantillaEnviar',
+					type: 'string',
+					displayOptions: { show: { resource: ['cfdi'], operation: ['enviarCFDI40'] } },
+					default: '',
+					description: 'Plantilla configurada en el Sistema en línea',
+				},
+
+				// CancelarCFDIsV4
 				{
 					displayName: 'UUIDs a Cancelar (JSON Array)',
 					name: 'uuidsCancelar',
 					type: 'json',
-					displayOptions: { show: { resource: ['cfdi'], operation: ['cancelarCFDIsV4', 'cancelarCFDIs'] } },
-					default: '[]',
-					description:
-						'Array de objetos con uuid, motivo y uuidSustitucion (opcional). Ejemplo: [{"uuid":"...","motivo":"02"}]',
-				},
-				{
-					displayName: 'RFC Emisor',
-					name: 'rfcEmisor',
-					type: 'string',
 					displayOptions: { show: { resource: ['cfdi'], operation: ['cancelarCFDIsV4'] } },
-					default: '',
+					default: '[{"UUID":"","Motivo":"02","FolioSustitucion":""}]',
 					required: true,
-					description: 'RFC del emisor del CFDI',
+					description: 'Array de objetos con UUID (requerido), Motivo (01-04) y FolioSustitucion (solo Motivo 01). Máx. 500.',
 				},
 
-				// Enviar
+				// ObtenerComprobantes40
 				{
-					displayName: 'UUID',
-					name: 'enviarUuid',
+					displayName: 'Fecha Inicial',
+					name: 'fechaInicial',
 					type: 'string',
-					displayOptions: { show: { resource: ['cfdi'], operation: ['enviarCFDI40', 'enviarCFDI'] } },
-					default: '',
-					required: true,
-					description: 'UUID del CFDI a enviar',
-				},
-				{
-					displayName: 'Correo Electrónico',
-					name: 'email',
-					type: 'string',
-					displayOptions: { show: { resource: ['cfdi'], operation: ['enviarCFDI40', 'enviarCFDI'] } },
-					default: '',
-					required: true,
-					description: 'Dirección de correo del destinatario',
-				},
-
-				// Obtener Comprobantes
-				{
-					displayName: 'Fecha Inicio',
-					name: 'fechaInicio',
-					type: 'string',
-					displayOptions: {
-						show: { resource: ['cfdi'], operation: ['obtenerComprobantes40', 'obtenerComprobantes'] },
-					},
+					displayOptions: { show: { resource: ['cfdi'], operation: ['obtenerComprobantes40'] } },
 					default: '',
 					required: true,
 					placeholder: 'YYYY-MM-DDTHH:mm:ss',
-					description: 'Fecha de inicio (ISO 8601)',
+					description: 'Fecha inicial. Período máximo 1 mes.',
 				},
 				{
-					displayName: 'Fecha Fin',
-					name: 'fechaFin',
+					displayName: 'Fecha Final',
+					name: 'fechaFinal',
 					type: 'string',
-					displayOptions: {
-						show: { resource: ['cfdi'], operation: ['obtenerComprobantes40', 'obtenerComprobantes'] },
-					},
+					displayOptions: { show: { resource: ['cfdi'], operation: ['obtenerComprobantes40'] } },
 					default: '',
 					required: true,
 					placeholder: 'YYYY-MM-DDTHH:mm:ss',
-					description: 'Fecha de fin (ISO 8601)',
 				},
 				{
-					displayName: 'RFC Receptor (opcional)',
-					name: 'rfcReceptorBusqueda',
-					type: 'string',
-					displayOptions: {
-						show: { resource: ['cfdi'], operation: ['obtenerComprobantes40', 'obtenerComprobantes'] },
-					},
-					default: '',
-					description: 'Filtrar por RFC del receptor',
+					displayName: 'Fila Inicial',
+					name: 'filaInicial',
+					type: 'number',
+					displayOptions: { show: { resource: ['cfdi'], operation: ['obtenerComprobantes40'] } },
+					default: 1,
+					description: 'Registro inicial para paginar. Incrementar de 20 en 20.',
 				},
 
 				// ════════════════════════════════════════════════════════
-				// Fields: Ticket
+				// TICKET FIELDS
 				// ════════════════════════════════════════════════════════
 				{
 					displayName: 'Ticket JSON',
-					name: 'ticketData',
+					name: 'ticketJson',
 					type: 'json',
-					displayOptions: { show: { resource: ['ticket'], operation: ['generarTicket'] } },
+					displayOptions: { show: { resource: ['ticket'], operation: ['generarTicket40'] } },
 					default: '{}',
-					description: 'Datos del ticket como objeto JSON',
+					required: true,
+					description: 'Objeto Ticket40R como JSON',
 				},
 				{
-					displayName: 'Ticket ID',
-					name: 'ticketId',
+					displayName: 'Fecha Inicial',
+					name: 'ticketFechaInicial',
+					type: 'string',
+					displayOptions: { show: { resource: ['ticket'], operation: ['obtenerTickets', 'obtenerTicketsPorEstatus'] } },
+					default: '',
+					required: true,
+					placeholder: 'YYYY-MM-DDTHH:mm:ss',
+				},
+				{
+					displayName: 'Fecha Final',
+					name: 'ticketFechaFinal',
+					type: 'string',
+					displayOptions: { show: { resource: ['ticket'], operation: ['obtenerTickets', 'obtenerTicketsPorEstatus'] } },
+					default: '',
+					required: true,
+					placeholder: 'YYYY-MM-DDTHH:mm:ss',
+				},
+				{
+					displayName: 'Fila Inicial',
+					name: 'ticketFilaInicial',
+					type: 'number',
+					displayOptions: { show: { resource: ['ticket'], operation: ['obtenerTickets', 'obtenerTicketsPorEstatus'] } },
+					default: 1,
+				},
+				{
+					displayName: 'Tamaño de Página',
+					name: 'tamanoPagina',
+					type: 'number',
+					displayOptions: { show: { resource: ['ticket'], operation: ['obtenerTicketsPorEstatus'] } },
+					default: 20,
+					description: 'Número de registros por página',
+				},
+				{
+					displayName: 'Estatus',
+					name: 'ticketEstatus',
+					type: 'options',
+					options: [
+						{ name: 'Nuevo', value: 'NUEVO' },
+						{ name: 'Facturado', value: 'FACTURADO' },
+					],
+					displayOptions: { show: { resource: ['ticket'], operation: ['obtenerTicketsPorEstatus'] } },
+					default: 'NUEVO',
+				},
+				{
+					displayName: 'Referencia del Ticket',
+					name: 'ticketReferencia',
 					type: 'string',
 					displayOptions: { show: { resource: ['ticket'], operation: ['cancelarTicket'] } },
 					default: '',
 					required: true,
-					description: 'ID del ticket a cancelar',
-				},
-				{
-					displayName: 'Fecha Inicio',
-					name: 'ticketFechaInicio',
-					type: 'string',
-					displayOptions: { show: { resource: ['ticket'], operation: ['obtenerTickets'] } },
-					default: '',
-					placeholder: 'YYYY-MM-DDTHH:mm:ss',
-					description: 'Fecha de inicio para búsqueda de tickets',
-				},
-				{
-					displayName: 'Fecha Fin',
-					name: 'ticketFechaFin',
-					type: 'string',
-					displayOptions: { show: { resource: ['ticket'], operation: ['obtenerTickets'] } },
-					default: '',
-					placeholder: 'YYYY-MM-DDTHH:mm:ss',
-					description: 'Fecha de fin para búsqueda de tickets',
+					description: 'Referencia del ticket generado a cancelar (máx. 32 caracteres)',
 				},
 
 				// ════════════════════════════════════════════════════════
-				// Fields: Crédito
+				// CRÉDITO FIELDS
 				// ════════════════════════════════════════════════════════
 				{
-					displayName: 'Número de Crédito',
-					name: 'numeroCredito',
-					type: 'string',
-					displayOptions: { show: { resource: ['credit'], operation: ['activarPaquete'] } },
-					default: '',
+					displayName: 'Número de Créditos',
+					name: 'numCreditos',
+					type: 'number',
+					displayOptions: { show: { resource: ['credit'], operation: ['activarPaquete', 'traspasarPaquete'] } },
+					default: 0,
 					required: true,
-					description: 'Número / código de activación del paquete',
+					description: 'Número de créditos del paquete a activar o traspasar',
 				},
 				{
 					displayName: 'Cuenta Destino',
@@ -325,20 +364,50 @@ class DixitiaFEL {
 					displayOptions: { show: { resource: ['credit'], operation: ['traspasarPaquete'] } },
 					default: '',
 					required: true,
-					description: 'Cuenta destino para el traspaso de créditos',
-				},
-				{
-					displayName: 'Cantidad',
-					name: 'cantidadCreditos',
-					type: 'number',
-					displayOptions: { show: { resource: ['credit'], operation: ['traspasarPaquete'] } },
-					default: 0,
-					required: true,
-					description: 'Número de créditos a traspasar',
+					description: 'Cuenta destino para el traspaso',
 				},
 
 				// ════════════════════════════════════════════════════════
-				// Fields: Utilidad
+				// CANCELACIÓN RECEPTOR FIELDS
+				// ════════════════════════════════════════════════════════
+				{
+					displayName: 'Fecha Inicial',
+					name: 'solicitudFechaInicial',
+					type: 'string',
+					displayOptions: { show: { resource: ['cancelacionReceptor'], operation: ['obtenerSolicitudesCancelacion'] } },
+					default: '',
+					required: true,
+					placeholder: 'YYYY-MM-DDTHH:mm:ss',
+					description: 'Período máximo 31 días',
+				},
+				{
+					displayName: 'Fecha Final',
+					name: 'solicitudFechaFinal',
+					type: 'string',
+					displayOptions: { show: { resource: ['cancelacionReceptor'], operation: ['obtenerSolicitudesCancelacion'] } },
+					default: '',
+					required: true,
+					placeholder: 'YYYY-MM-DDTHH:mm:ss',
+				},
+				{
+					displayName: 'Fila Inicial',
+					name: 'solicitudFilaInicial',
+					type: 'number',
+					displayOptions: { show: { resource: ['cancelacionReceptor'], operation: ['obtenerSolicitudesCancelacion'] } },
+					default: 1,
+				},
+				{
+					displayName: 'Solicitudes a Procesar (JSON Array)',
+					name: 'solicitudesProcesar',
+					type: 'json',
+					displayOptions: { show: { resource: ['cancelacionReceptor'], operation: ['procesarSolicitudesCancelacion'] } },
+					default: '[{"UUID":"","Aceptar":"true"}]',
+					required: true,
+					description: 'Array con UUID y Aceptar (true=aceptar cancelación, false=rechazar). Máx. 500.',
+				},
+
+				// ════════════════════════════════════════════════════════
+				// UTILITY FIELDS
 				// ════════════════════════════════════════════════════════
 				{
 					displayName: 'RFC',
@@ -347,7 +416,7 @@ class DixitiaFEL {
 					displayOptions: { show: { resource: ['utility'], operation: ['validarRFC'] } },
 					default: '',
 					required: true,
-					description: 'RFC a validar',
+					description: 'RFC a validar en la lista de Inscritos No Cancelados del SAT',
 				},
 
 				// ════════════════════════════════════════════════════════
@@ -365,7 +434,7 @@ class DixitiaFEL {
 							name: 'rawXml',
 							type: 'boolean',
 							default: false,
-							description: 'Whether to include the raw SOAP response XML in the output (útil para depuración)',
+							description: 'Whether to include the raw SOAP XML response (útil para depuración)',
 						},
 					],
 				},
@@ -376,7 +445,6 @@ class DixitiaFEL {
 	async execute() {
 		const items = this.getInputData();
 		const returnItems = [];
-
 		const credentials = await this.getCredentials('dixitiaFELApi');
 		const { cuenta, usuario, password } = credentials;
 
@@ -385,7 +453,6 @@ class DixitiaFEL {
 			const resource = this.getNodeParameter('resource', i);
 			const operation = this.getNodeParameter('operation', i);
 			const options = this.getNodeParameter('options', i, {});
-
 			const endpoint = environment === 'test' ? ENDPOINT_TEST : ENDPOINT_PROD;
 			const creds = buildCredenciales(cuenta, usuario, password);
 
@@ -397,81 +464,43 @@ class DixitiaFEL {
 			if (resource === 'cfdi') {
 
 				if (operation === 'generarCFDI40') {
-					const raw = this.getNodeParameter('comprobante40', i, '{}');
+					const raw = this.getNodeParameter('cfdiJson', i, '{}');
 					const obj = typeof raw === 'string' ? JSON.parse(raw) : raw;
 					soapAction = ACTION_BASE + 'GenerarCFDI40';
 					body = envelope(`<tns:GenerarCFDI40>
   ${creds}
-  ${objToXml('comprobante', obj)}
+  ${objToXml('cfdi', obj)}
 </tns:GenerarCFDI40>`);
 					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'GenerarCFDI40Result') || xml);
-				}
-
-				else if (operation === 'generarCFDI') {
-					const raw = this.getNodeParameter('comprobante33', i, '{}');
-					const obj = typeof raw === 'string' ? JSON.parse(raw) : raw;
-					soapAction = ACTION_BASE + 'GenerarCFDI';
-					body = envelope(`<tns:GenerarCFDI>
-  ${creds}
-  ${objToXml('comprobante', obj)}
-</tns:GenerarCFDI>`);
-					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'GenerarCFDIResult') || xml);
 				}
 
 				else if (operation === 'cancelarCFDIsV4') {
 					const raw = this.getNodeParameter('uuidsCancelar', i, '[]');
 					const uuids = typeof raw === 'string' ? JSON.parse(raw) : raw;
-					const rfcEmisor = this.getNodeParameter('rfcEmisor', i);
-					const cancelXml = uuids
-						.map(
-							(u) => `<tns:CancelacionCR>
-    <tns:UUID>${escXml(u.uuid)}</tns:UUID>
-    <tns:Motivo>${escXml(u.motivo || '02')}</tns:Motivo>
-    ${u.uuidSustitucion ? `<tns:UUIDSustitucion>${escXml(u.uuidSustitucion)}</tns:UUIDSustitucion>` : ''}
-  </tns:CancelacionCR>`,
-						)
-						.join('');
+					const cancelXml = uuids.map((u) =>
+						`<cred:UUIDMotivoCancelacionCR>
+    <cred:UUID>${escXml(u.UUID || u.uuid)}</cred:UUID>
+    <cred:Motivo>${escXml(u.Motivo || u.motivo || '02')}</cred:Motivo>
+    ${(u.FolioSustitucion || u.folioSustitucion) ? `<cred:FolioSustitucion>${escXml(u.FolioSustitucion || u.folioSustitucion)}</cred:FolioSustitucion>` : ''}
+  </cred:UUIDMotivoCancelacionCR>`).join('');
 					soapAction = ACTION_BASE + 'CancelarCFDIsV4';
 					body = envelope(`<tns:CancelarCFDIsV4>
   ${creds}
-  <tns:rfcEmisor>${escXml(rfcEmisor)}</tns:rfcEmisor>
-  <tns:cancelaciones>${cancelXml}</tns:cancelaciones>
+  <tns:uuids>${cancelXml}</tns:uuids>
 </tns:CancelarCFDIsV4>`);
 					responseParser = (xml) => parseRespuestaCancelacion(getTag(xml, 'CancelarCFDIsV4Result') || xml);
 				}
 
-				else if (operation === 'cancelarCFDIs') {
-					const raw = this.getNodeParameter('uuidsCancelar', i, '[]');
-					const uuids = typeof raw === 'string' ? JSON.parse(raw) : raw;
-					const uuidsXml = uuids
-						.map((u) => `<tns:string>${escXml(typeof u === 'string' ? u : u.uuid)}</tns:string>`)
-						.join('');
-					soapAction = ACTION_BASE + 'CancelarCFDIs';
-					body = envelope(`<tns:CancelarCFDIs>
-  ${creds}
-  <tns:uuids>${uuidsXml}</tns:uuids>
-</tns:CancelarCFDIs>`);
-					responseParser = (xml) => parseRespuestaCancelacion(getTag(xml, 'CancelarCFDIsResult') || xml);
-				}
-
 				else if (operation === 'obtenerPDF40') {
 					const uuid = this.getNodeParameter('uuid', i);
+					const nombrePlantilla = this.getNodeParameter('nombrePlantilla', i, '');
 					soapAction = ACTION_BASE + 'ObtenerPDF40';
 					body = envelope(`<tns:ObtenerPDF40>
   ${creds}
   <tns:uuid>${escXml(uuid)}</tns:uuid>
+  <tns:nombrePlantilla>${escXml(nombrePlantilla)}</tns:nombrePlantilla>
 </tns:ObtenerPDF40>`);
 					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'ObtenerPDF40Result') || xml);
-				}
-
-				else if (operation === 'obtenerPDF') {
-					const uuid = this.getNodeParameter('uuid', i);
-					soapAction = ACTION_BASE + 'ObtenerPDF';
-					body = envelope(`<tns:ObtenerPDF>
-  ${creds}
-  <tns:uuid>${escXml(uuid)}</tns:uuid>
-</tns:ObtenerPDF>`);
-					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'ObtenerPDFResult') || xml);
 				}
 
 				else if (operation === 'obtenerXMLPorUUID40') {
@@ -484,136 +513,123 @@ class DixitiaFEL {
 					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'ObtenerXMLPorUUID40Result') || xml);
 				}
 
-				else if (operation === 'obtenerXMLPorUUID') {
-					const uuid = this.getNodeParameter('uuid', i);
-					soapAction = ACTION_BASE + 'ObtenerXMLPorUUID';
-					body = envelope(`<tns:ObtenerXMLPorUUID>
+				else if (operation === 'obtenerXMLPorReferencia40') {
+					const referencia = this.getNodeParameter('referencia', i);
+					soapAction = ACTION_BASE + 'ObtenerXMLPorReferencia40';
+					body = envelope(`<tns:ObtenerXMLPorReferencia40>
   ${creds}
-  <tns:uuid>${escXml(uuid)}</tns:uuid>
-</tns:ObtenerXMLPorUUID>`);
-					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'ObtenerXMLPorUUIDResult') || xml);
+  <tns:referencia>${escXml(referencia)}</tns:referencia>
+</tns:ObtenerXMLPorReferencia40>`);
+					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'ObtenerXMLPorReferencia40Result') || xml);
 				}
 
-				else if (operation === 'obtenerPDFyXML40') {
+				else if (operation === 'obtenerAcuseCancelacion40') {
 					const uuid = this.getNodeParameter('uuid', i);
-					soapAction = ACTION_BASE + 'ObtenerPDFyXML40';
-					body = envelope(`<tns:ObtenerPDFyXML40>
+					soapAction = ACTION_BASE + 'ObtenerAcuseCancelacion40';
+					body = envelope(`<tns:ObtenerAcuseCancelacion40>
   ${creds}
   <tns:uuid>${escXml(uuid)}</tns:uuid>
-</tns:ObtenerPDFyXML40>`);
-					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'ObtenerPDFyXML40Result') || xml);
+</tns:ObtenerAcuseCancelacion40>`);
+					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'ObtenerAcuseCancelacion40Result') || xml);
+				}
+
+				else if (operation === 'obtenerAcuseEnvio40') {
+					const uuid = this.getNodeParameter('uuid', i);
+					soapAction = ACTION_BASE + 'ObtenerAcuseEnvio40';
+					body = envelope(`<tns:ObtenerAcuseEnvio40>
+  ${creds}
+  <tns:uuid>${escXml(uuid)}</tns:uuid>
+</tns:ObtenerAcuseEnvio40>`);
+					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'ObtenerAcuseEnvio40Result') || xml);
 				}
 
 				else if (operation === 'enviarCFDI40') {
-					const uuid = this.getNodeParameter('enviarUuid', i);
+					const uuid = this.getNodeParameter('uuid', i);
 					const email = this.getNodeParameter('email', i);
+					const titulo = this.getNodeParameter('titulo', i, '');
+					const mensaje = this.getNodeParameter('mensaje', i, '');
+					const nombrePlantilla = this.getNodeParameter('nombrePlantillaEnviar', i, '');
 					soapAction = ACTION_BASE + 'EnviarCFDI40';
 					body = envelope(`<tns:EnviarCFDI40>
   ${creds}
   <tns:uuid>${escXml(uuid)}</tns:uuid>
   <tns:email>${escXml(email)}</tns:email>
+  <tns:titulo>${escXml(titulo)}</tns:titulo>
+  <tns:mensaje>${escXml(mensaje)}</tns:mensaje>
+  <tns:nombrePlantilla>${escXml(nombrePlantilla)}</tns:nombrePlantilla>
 </tns:EnviarCFDI40>`);
-					responseParser = (xml) => ({ result: getTag(xml, 'EnviarCFDI40Result'), ok: true });
-				}
-
-				else if (operation === 'enviarCFDI') {
-					const uuid = this.getNodeParameter('enviarUuid', i);
-					const email = this.getNodeParameter('email', i);
-					soapAction = ACTION_BASE + 'EnviarCFDI';
-					body = envelope(`<tns:EnviarCFDI>
-  ${creds}
-  <tns:uuid>${escXml(uuid)}</tns:uuid>
-  <tns:email>${escXml(email)}</tns:email>
-</tns:EnviarCFDI>`);
-					responseParser = (xml) => ({ result: getTag(xml, 'EnviarCFDIResult'), ok: true });
+					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'EnviarCFDI40Result') || xml);
 				}
 
 				else if (operation === 'obtenerComprobantes40') {
-					const fechaInicio = this.getNodeParameter('fechaInicio', i);
-					const fechaFin = this.getNodeParameter('fechaFin', i);
-					const rfcReceptor = this.getNodeParameter('rfcReceptorBusqueda', i, '');
+					const fechaInicial = this.getNodeParameter('fechaInicial', i);
+					const fechaFinal = this.getNodeParameter('fechaFinal', i);
+					const filaInicial = this.getNodeParameter('filaInicial', i, 1);
 					soapAction = ACTION_BASE + 'ObtenerComprobantes40';
 					body = envelope(`<tns:ObtenerComprobantes40>
   ${creds}
-  <tns:fechaInicio>${escXml(fechaInicio)}</tns:fechaInicio>
-  <tns:fechaFin>${escXml(fechaFin)}</tns:fechaFin>
-  ${rfcReceptor ? `<tns:rfcReceptor>${escXml(rfcReceptor)}</tns:rfcReceptor>` : ''}
+  <tns:fechaInicial>${escXml(fechaInicial)}</tns:fechaInicial>
+  <tns:fechaFinal>${escXml(fechaFinal)}</tns:fechaFinal>
+  <tns:filaInicial>${escXml(filaInicial)}</tns:filaInicial>
 </tns:ObtenerComprobantes40>`);
 					responseParser = (xml) => parseRespuestaReporte(getTag(xml, 'ObtenerComprobantes40Result') || xml);
-				}
-
-				else if (operation === 'obtenerComprobantes') {
-					const fechaInicio = this.getNodeParameter('fechaInicio', i);
-					const fechaFin = this.getNodeParameter('fechaFin', i);
-					const rfcReceptor = this.getNodeParameter('rfcReceptorBusqueda', i, '');
-					soapAction = ACTION_BASE + 'ObtenerComprobantes';
-					body = envelope(`<tns:ObtenerComprobantes>
-  ${creds}
-  <tns:fechaInicio>${escXml(fechaInicio)}</tns:fechaInicio>
-  <tns:fechaFin>${escXml(fechaFin)}</tns:fechaFin>
-  ${rfcReceptor ? `<tns:rfcReceptor>${escXml(rfcReceptor)}</tns:rfcReceptor>` : ''}
-</tns:ObtenerComprobantes>`);
-					responseParser = (xml) => parseRespuestaReporte(getTag(xml, 'ObtenerComprobantesResult') || xml);
-				}
-
-				else if (operation === 'consultarEstatusCancelacion') {
-					const uuid = this.getNodeParameter('uuid', i);
-					soapAction = ACTION_BASE + 'ConsultarEstatusCancelacion';
-					body = envelope(`<tns:ConsultarEstatusCancelacion>
-  ${creds}
-  <tns:uuid>${escXml(uuid)}</tns:uuid>
-</tns:ConsultarEstatusCancelacion>`);
-					responseParser = (xml) => ({
-						estatus: getTag(xml, 'ConsultarEstatusCancelacionResult'),
-						ok: true,
-					});
-				}
-
-				else if (operation === 'obtenerRelacionados40') {
-					const uuid = this.getNodeParameter('uuid', i);
-					soapAction = ACTION_BASE + 'ObtenerRelacionados40';
-					body = envelope(`<tns:ObtenerRelacionados40>
-  ${creds}
-  <tns:uuid>${escXml(uuid)}</tns:uuid>
-</tns:ObtenerRelacionados40>`);
-					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'ObtenerRelacionados40Result') || xml);
 				}
 			}
 
 			// ── Ticket ───────────────────────────────────────────────
 			else if (resource === 'ticket') {
 
-				if (operation === 'generarTicket') {
-					const raw = this.getNodeParameter('ticketData', i, '{}');
+				if (operation === 'generarTicket40') {
+					const raw = this.getNodeParameter('ticketJson', i, '{}');
 					const obj = typeof raw === 'string' ? JSON.parse(raw) : raw;
-					soapAction = ACTION_BASE + 'GenerarTicket';
-					body = envelope(`<tns:GenerarTicket>
+					soapAction = ACTION_BASE + 'GenerarTicket40';
+					body = envelope(`<tns:GenerarTicket40>
   ${creds}
   ${objToXml('ticket', obj)}
-</tns:GenerarTicket>`);
-					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'GenerarTicketResult') || xml);
-				}
-
-				else if (operation === 'cancelarTicket') {
-					const ticketId = this.getNodeParameter('ticketId', i);
-					soapAction = ACTION_BASE + 'CancelarTicket';
-					body = envelope(`<tns:CancelarTicket>
-  ${creds}
-  <tns:ticketId>${escXml(ticketId)}</tns:ticketId>
-</tns:CancelarTicket>`);
-					responseParser = (xml) => ({ result: getTag(xml, 'CancelarTicketResult'), ok: true });
+</tns:GenerarTicket40>`);
+					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'GenerarTicket40Result') || xml);
 				}
 
 				else if (operation === 'obtenerTickets') {
-					const fechaInicio = this.getNodeParameter('ticketFechaInicio', i, '');
-					const fechaFin = this.getNodeParameter('ticketFechaFin', i, '');
+					const fechaInicial = this.getNodeParameter('ticketFechaInicial', i);
+					const fechaFinal = this.getNodeParameter('ticketFechaFinal', i);
+					const filaInicial = this.getNodeParameter('ticketFilaInicial', i, 1);
 					soapAction = ACTION_BASE + 'ObtenerTickets';
 					body = envelope(`<tns:ObtenerTickets>
   ${creds}
-  ${fechaInicio ? `<tns:fechaInicio>${escXml(fechaInicio)}</tns:fechaInicio>` : ''}
-  ${fechaFin ? `<tns:fechaFin>${escXml(fechaFin)}</tns:fechaFin>` : ''}
+  <tns:fechaInicial>${escXml(fechaInicial)}</tns:fechaInicial>
+  <tns:fechaFinal>${escXml(fechaFinal)}</tns:fechaFinal>
+  <tns:filaInicial>${escXml(filaInicial)}</tns:filaInicial>
 </tns:ObtenerTickets>`);
 					responseParser = (xml) => parseRespuestaReporte(getTag(xml, 'ObtenerTicketsResult') || xml);
+				}
+
+				else if (operation === 'obtenerTicketsPorEstatus') {
+					const fechaInicial = this.getNodeParameter('ticketFechaInicial', i);
+					const fechaFinal = this.getNodeParameter('ticketFechaFinal', i);
+					const filaInicial = this.getNodeParameter('ticketFilaInicial', i, 1);
+					const tamanoPagina = this.getNodeParameter('tamanoPagina', i, 20);
+					const estatus = this.getNodeParameter('ticketEstatus', i);
+					soapAction = ACTION_BASE + 'ObtenerTicketsPorEstatus';
+					body = envelope(`<tns:ObtenerTicketsPorEstatus>
+  ${creds}
+  <tns:fechaInicial>${escXml(fechaInicial)}</tns:fechaInicial>
+  <tns:fechaFinal>${escXml(fechaFinal)}</tns:fechaFinal>
+  <tns:tamanoPagina>${escXml(tamanoPagina)}</tns:tamanoPagina>
+  <tns:filaInicial>${escXml(filaInicial)}</tns:filaInicial>
+  <tns:Estatus>${escXml(estatus)}</tns:Estatus>
+</tns:ObtenerTicketsPorEstatus>`);
+					responseParser = (xml) => parseRespuestaReporte(getTag(xml, 'ObtenerTicketsPorEstatusResult') || xml);
+				}
+
+				else if (operation === 'cancelarTicket') {
+					const referencia = this.getNodeParameter('ticketReferencia', i);
+					soapAction = ACTION_BASE + 'CancelarTicket';
+					body = envelope(`<tns:CancelarTicket>
+  ${creds}
+  <tns:referencia>${escXml(referencia)}</tns:referencia>
+</tns:CancelarTicket>`);
+					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'CancelarTicketResult') || xml);
 				}
 			}
 
@@ -625,41 +641,75 @@ class DixitiaFEL {
 					body = envelope(`<tns:ObtenerNumerosCreditos>
   ${creds}
 </tns:ObtenerNumerosCreditos>`);
-					responseParser = (xml) => ({
-						creditos: getAllTags(xml, 'NumeroCredito').map((c) => ({
-							numero: getTag(c, 'Numero'),
-							saldo: getTag(c, 'Saldo'),
-							tipo: getTag(c, 'Tipo'),
-						})),
-						raw: getTag(xml, 'ObtenerNumerosCreditosResult'),
-						ok: true,
-					});
+					responseParser = (xml) => parseNumerosCreditos(getTag(xml, 'ObtenerNumerosCreditosResult') || xml);
 				}
 
 				else if (operation === 'activarPaquete') {
-					const numeroCredito = this.getNodeParameter('numeroCredito', i);
+					const numCreditos = this.getNodeParameter('numCreditos', i);
 					soapAction = ACTION_BASE + 'ActivarPaquete';
 					body = envelope(`<tns:ActivarPaquete>
   ${creds}
-  <tns:numeroCredito>${escXml(numeroCredito)}</tns:numeroCredito>
+  <tns:NumCreditos>${escXml(numCreditos)}</tns:NumCreditos>
 </tns:ActivarPaquete>`);
-					responseParser = (xml) => ({ result: getTag(xml, 'ActivarPaqueteResult'), ok: true });
+					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'ActivarPaqueteResult') || xml);
 				}
 
 				else if (operation === 'traspasarPaquete') {
+					const numCreditos = this.getNodeParameter('numCreditos', i);
 					const cuentaDestino = this.getNodeParameter('cuentaDestino', i);
-					const cantidad = this.getNodeParameter('cantidadCreditos', i);
 					soapAction = ACTION_BASE + 'TraspasarPaquete';
 					body = envelope(`<tns:TraspasarPaquete>
   ${creds}
+  <tns:NumCreditos>${escXml(numCreditos)}</tns:NumCreditos>
   <tns:cuentaDestino>${escXml(cuentaDestino)}</tns:cuentaDestino>
-  <tns:cantidad>${escXml(cantidad)}</tns:cantidad>
 </tns:TraspasarPaquete>`);
-					responseParser = (xml) => ({ result: getTag(xml, 'TraspasarPaqueteResult'), ok: true });
+					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'TraspasarPaqueteResult') || xml);
 				}
 			}
 
-			// ── Utilidad ─────────────────────────────────────────────
+			// ── Cancelación Receptor ─────────────────────────────────
+			else if (resource === 'cancelacionReceptor') {
+
+				if (operation === 'obtenerSolicitudesCancelacion') {
+					const fechaInicial = this.getNodeParameter('solicitudFechaInicial', i);
+					const fechaFinal = this.getNodeParameter('solicitudFechaFinal', i);
+					const filaInicial = this.getNodeParameter('solicitudFilaInicial', i, 1);
+					soapAction = ACTION_BASE + 'ObtenerSolicitudesCancelacion';
+					body = envelope(`<tns:ObtenerSolicitudesCancelacion>
+  ${creds}
+  <tns:fechaInicial>${escXml(fechaInicial)}</tns:fechaInicial>
+  <tns:fechaFinal>${escXml(fechaFinal)}</tns:fechaFinal>
+  <tns:filaInicial>${escXml(filaInicial)}</tns:filaInicial>
+</tns:ObtenerSolicitudesCancelacion>`);
+					responseParser = (xml) => parseRespuestaReporte(getTag(xml, 'ObtenerSolicitudesCancelacionResult') || xml);
+				}
+
+				else if (operation === 'obtenerSolicitudesPendientes') {
+					soapAction = ACTION_BASE + 'ObtenerSolicitudesPendientes';
+					body = envelope(`<tns:ObtenerSolicitudesPendientes>
+  ${creds}
+</tns:ObtenerSolicitudesPendientes>`);
+					responseParser = (xml) => parseRespuestaReporte(getTag(xml, 'ObtenerSolicitudesPendientesResult') || xml);
+				}
+
+				else if (operation === 'procesarSolicitudesCancelacion') {
+					const raw = this.getNodeParameter('solicitudesProcesar', i, '[]');
+					const solicitudes = typeof raw === 'string' ? JSON.parse(raw) : raw;
+					const solicitudesXml = solicitudes.map((s) =>
+						`<cred:RepuestaSolicitudCancelacionCR>
+    <cred:UUID>${escXml(s.UUID || s.uuid)}</cred:UUID>
+    <cred:Aceptar>${escXml(s.Aceptar || s.aceptar || 'true')}</cred:Aceptar>
+  </cred:RepuestaSolicitudCancelacionCR>`).join('');
+					soapAction = ACTION_BASE + 'ProcesarSolicitudesCancelacion';
+					body = envelope(`<tns:ProcesarSolicitudesCancelacion>
+  ${creds}
+  <tns:uuids>${solicitudesXml}</tns:uuids>
+</tns:ProcesarSolicitudesCancelacion>`);
+					responseParser = (xml) => parseRespuestaCancelacion(getTag(xml, 'ProcesarSolicitudesCancelacionResult') || xml);
+				}
+			}
+
+			// ── Utility ──────────────────────────────────────────────
 			else if (resource === 'utility') {
 
 				if (operation === 'validarRFC') {
@@ -669,10 +719,18 @@ class DixitiaFEL {
   ${creds}
   <tns:rfc>${escXml(rfc)}</tns:rfc>
 </tns:ValidarRFC>`);
-					responseParser = (xml) => ({
-						valid: getTag(xml, 'ValidarRFCResult') === 'true',
-						ok: true,
-					});
+					responseParser = (xml) => {
+						const result = getTag(xml, 'ValidarRFCResult') || xml;
+						return {
+							cancelado: getTag(result, 'Cancelado'),
+							rfcLocalizado: getTag(result, 'RFCLocalizado'),
+							rfc: getTag(result, 'RFC'),
+							subcontratacion: getTag(result, 'Subcontratacion'),
+							unidadSNCF: getTag(result, 'UnidadSNCF'),
+							mensajeError: getTag(result, 'MensajeError'),
+							ok: getTag(result, 'RFCLocalizado') === 'true',
+						};
+					};
 				}
 			}
 
@@ -695,10 +753,7 @@ class DixitiaFEL {
 			const rawXmlResponse = response.body;
 
 			if (rawXmlResponse.includes('soap:Fault') || rawXmlResponse.includes('s:Fault')) {
-				const faultString =
-					getTag(rawXmlResponse, 'faultstring') ||
-					getTag(rawXmlResponse, 'Reason') ||
-					'SOAP Fault';
+				const faultString = getTag(rawXmlResponse, 'faultstring') || getTag(rawXmlResponse, 'Reason') || 'SOAP Fault';
 				throw new Error(`SOAP Fault: ${faultString}`);
 			}
 
