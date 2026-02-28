@@ -759,7 +759,7 @@ class DixitiaFEL {
 
 			const parsed = responseParser(rawXmlResponse);
 			const outputItem = { json: parsed };
-			if (options.rawXml) outputItem.json._rawXml = rawXmlResponse;
+			if (options.rawXml) { outputItem.json._rawXmlRequest = body; outputItem.json._rawXmlResponse = rawXmlResponse; }
 
 			returnItems.push(outputItem);
 		}
