@@ -11,6 +11,7 @@ const {
 	parseRespuestaCancelacion,
 	parseRespuestaReporte,
 	parseNumerosCreditos,
+	buildDataContractParam,
 } = require('./soap');
 
 const ENDPOINT_PROD = 'https://fel.mx/CR33/ConexionRemota.svc';
@@ -163,7 +164,7 @@ class DixitiaFEL {
 					displayOptions: { show: { resource: ['cfdi'], operation: ['generarCFDI40'] } },
 					default: '{}',
 					required: true,
-					description: 'Objeto Comprobante40R completo como JSON. Ver documentación oficial para la estructura.',
+					description: 'Objeto Comprobante40R completo como JSON. Usar ClaveCFDI (ej. "FAC"), Conceptos > Concepto40R, Traslados > TrasladoConcepto40R. Ver documentación oficial para la estructura.',
 				},
 
 				// UUID (lowercase per spec) — shared
@@ -469,7 +470,7 @@ class DixitiaFEL {
 					soapAction = ACTION_BASE + 'GenerarCFDI40';
 					body = envelope(`<tns:GenerarCFDI40>
   ${creds}
-  ${objToXml('comprobante', obj)}
+  ${buildDataContractParam('cfdi', obj)}
 </tns:GenerarCFDI40>`);
 					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'GenerarCFDI40Result') || xml);
 				}
@@ -585,7 +586,7 @@ class DixitiaFEL {
 					soapAction = ACTION_BASE + 'GenerarTicket40';
 					body = envelope(`<tns:GenerarTicket40>
   ${creds}
-  ${objToXml('ticket', obj)}
+  ${buildDataContractParam('ticket', obj)}
 </tns:GenerarTicket40>`);
 					responseParser = (xml) => parseRespuestaOperacion(getTag(xml, 'GenerarTicket40Result') || xml);
 				}

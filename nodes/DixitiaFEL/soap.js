@@ -39,11 +39,30 @@ function escXml(val) {
 }
 
 /**
+ * Maps array container tag names to their child element tag names.
+ * Based on official Comprobante40R spec.
+ */
+const ARRAY_CHILD_MAP = {
+	Conceptos: 'Concepto40R',
+	Traslados: 'TrasladoConcepto40R',
+	Retenciones: 'RetencionConceptoR',
+	CfdiRelacionados: 'CfdiRelacionado',
+	InformacionGlobal: null, // object, not array
+	// Complementos
+	Pagos: 'Pago',
+	DoctoRelacionado: 'DoctoRelacionadoR',
+	// Nómina
+	Percepciones: 'PercepcionR',
+	Deducciones: 'DeduccionR',
+	OtrosPagos: 'OtroPagoR',
+};
+
+/**
  * Recursively convert a JS object to XML elements under the given namespace prefix.
  * Keys starting with '@' become XML attributes.
- * Arrays are serialized as repeated sibling elements.
+ * Arrays use ARRAY_CHILD_MAP to determine the child element name.
  */
-function objToXml(tagName, obj, ns = 'tns') {
+function objToXml(tagName, obj, ns = 'cred') {
 	if (obj === null || obj === undefined) return '';
 	if (typeof obj !== 'object') {
 		return `<${ns}:${tagName}>${escXml(obj)}</${ns}:${tagName}>`;
@@ -53,11 +72,14 @@ function objToXml(tagName, obj, ns = 'tns') {
 	}
 	const attrs = [];
 	const children = [];
-	for (const [key, val] of Object.entries(obj)) {
+	for (const [key, val] of Object.entries(obj).sort(([a], [b]) => a.localeCompare(b))) {
 		if (key.startsWith('@')) {
 			attrs.push(`${key.slice(1)}="${escXml(val)}"`);
 		} else if (Array.isArray(val)) {
-			val.forEach((item) => children.push(objToXml(key, item, ns)));
+			// Wrap array with container tag, each item with child tag
+			const childTag = ARRAY_CHILD_MAP[key] || key;
+			const itemsXml = val.map((item) => objToXml(childTag, item, ns)).join('');
+			children.push(`<${ns}:${key}>${itemsXml}</${ns}:${key}>`);
 		} else if (typeof val === 'object' && val !== null) {
 			children.push(objToXml(key, val, ns));
 		} else {
@@ -167,6 +189,20 @@ function parseNumerosCreditos(xml) {
 	};
 }
 
+
+/**
+ * Build XML for a data contract object (uses cred: namespace for all children)
+ * wrapped in a tns: parameter tag.
+ * Use this for complex object parameters like comprobante, ticket, etc.
+ */
+function buildDataContractParam(paramName, obj) {
+	const inner = objToXml('__root__', obj, 'cred');
+	const content = inner
+		.replace(/^<cred:__root__>/, '')
+		.replace(/<\/cred:__root__>$/, '');
+	return `<tns:${paramName}>${content}</tns:${paramName}>`;
+}
+
 module.exports = {
 	envelope,
 	buildCredenciales,
@@ -178,4 +214,5 @@ module.exports = {
 	parseRespuestaCancelacion,
 	parseRespuestaReporte,
 	parseNumerosCreditos,
+	buildDataContractParam,
 };
